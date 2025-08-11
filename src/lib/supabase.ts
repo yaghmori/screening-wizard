@@ -9,5 +9,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 export interface ScreeningRecord {
   id?: number
   created_at?: string
+  first_name?: string
+  last_name?: string
+  email?: string
   data: Record<string, unknown> // JSON field containing the form data
 }

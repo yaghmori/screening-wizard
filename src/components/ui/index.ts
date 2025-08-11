@@ -23,3 +23,7 @@ export {
   Command, CommandEmpty, CommandGroup, CommandInput, CommandItem,
 } from "./command";
 export { Popover, PopoverContent, PopoverTrigger } from "./popover";
+export { Calendar } from "./calendar";
+export { CalendarPicker } from "./calendar-picker";
+export { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "./chart";
+export { Skeleton } from "./skeleton";
