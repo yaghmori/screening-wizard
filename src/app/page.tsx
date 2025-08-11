@@ -37,6 +37,7 @@ import {
   PopoverTrigger,
   cn
 } from '@/components/ui';
+import { Asap_Condensed } from 'next/font/google';
 
 /**
  * Next.js Wizard with Shadcn UI Components
@@ -413,7 +414,7 @@ interface DemographicAndMedicalInfoReviewDto extends DemographicAndMedicalInfoDt
   FOBRelationship: string | null;
 }
 
-interface GeneticsConditionDto { [key: string]: any }
+interface GeneticsConditionDto { [key: string]: string | null }
 
 interface GsPsDto {
   Year: number | null;
@@ -651,6 +652,11 @@ function GsPsRow({ row, onChange, onRemove }: { row: GsPsDto; onChange: (r: GsPs
 }
 
 export default function Page() {
+
+
+
+
+
   const [active, setActive] = useState<StepKey>('demographics');
   const stepIndex = steps.findIndex((s: typeof steps[number]) => s.key === active);
 
@@ -1099,9 +1105,9 @@ export default function Page() {
                   {geneticFlagRelationPairs.map(([flag, rel]) => (
                     <div key={flag} className="rounded-xl border p-4 dark:border-neutral-800">
                       <div className="text-sm font-medium mb-2">{spaceEnumName((flag as string).replace(/^Has/, ''))}</div>
-                      <YesNo name={flag as string} value={data.GeneticsCondition[flag as string] ?? null} onChange={(v) => setData({ ...data, GeneticsCondition: { ...data.GeneticsCondition, [flag as string]: v } })} />
+                      <YesNo name={flag as string} value={data.GeneticsCondition[flag as string] === 'true'} onChange={(v) => setData({ ...data, GeneticsCondition: { ...data.GeneticsCondition, [flag as string]: v ? 'true' : 'false' } })} />
                       <div className="mt-3">
-                        <EnumSelect enumType="FamilyRelationEnum" value={data.GeneticsCondition[rel as string] ?? null} onChange={(v) => setData({ ...data, GeneticsCondition: { ...data.GeneticsCondition, [rel as string]: v } })} disabled={data.GeneticsCondition[flag as string] !== true} />
+                        <EnumSelect enumType="FamilyRelationEnum" value={data.GeneticsCondition[rel as string] ?? null} onChange={(v) => setData({ ...data, GeneticsCondition: { ...data.GeneticsCondition, [rel as string]: v } })} disabled={data.GeneticsCondition[flag as string] !== 'true'} />
                       </div>
                     </div>
                   ))}
