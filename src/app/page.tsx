@@ -2,7 +2,8 @@
 
 import React, { useMemo, useState, useContext } from 'react';
 import { motion } from 'framer-motion';
-import { Check, ChevronsUpDown, X, Plus, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Check, ChevronsUpDown, X, Plus, Trash2, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 // Import all components from the bundled file
 import {
@@ -658,6 +659,9 @@ export default function Page() {
 
 
   const [active, setActive] = useState<StepKey>('demographics');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [submitMessage, setSubmitMessage] = useState('');
   const stepIndex = steps.findIndex((s: typeof steps[number]) => s.key === active);
 
   // i18n state and helpers
@@ -720,6 +724,43 @@ export default function Page() {
   };
   const goNext = () => setActive(steps[Math.min(stepIndex + 1, steps.length - 1)].key);
   const goPrev = () => setActive(steps[Math.max(stepIndex - 1, 0)].key);
+
+  // Function to handle form submission to Supabase
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+    setSubmitMessage('');
+
+    try {
+      const { data: result, error } = await supabase
+        .from('screening')
+        .insert([
+          {
+            data: data // Insert the entire form data as JSON
+          }
+        ])
+        .select();
+
+      if (error) {
+        console.error('Supabase error:', error);
+        setSubmitStatus('error');
+        setSubmitMessage(`Error submitting form: ${error.message}`);
+      } else {
+        console.log('Form submitted successfully:', result);
+        setSubmitStatus('success');
+        setSubmitMessage('Form submitted successfully! Your screening data has been saved.');
+        
+        // Optional: Reset form or redirect
+        // setData(initialData);
+      }
+    } catch (err) {
+      console.error('Submission error:', err);
+      setSubmitStatus('error');
+      setSubmitMessage('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // shorthand
   const dm = data.DemographicAndMedicalInfo;
@@ -1267,12 +1308,17 @@ export default function Page() {
             <div className="flex items-center gap-3">
               <Button 
                 variant="outline"
-                onClick={() => { 
-                  console.log('Submitting form:', data);
-                  // Handle submit
-                }}
+                onClick={handleSubmit}
+                disabled={isSubmitting}
               >
-                {t('Submit')}
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  t('Submit')
+                )}
               </Button>
               
               <Button 
@@ -1284,6 +1330,15 @@ export default function Page() {
               </Button>
             </div>
           </div>
+
+          {/* Submission Status */}
+          {submitStatus !== 'idle' && (
+            <Alert className={`mt-4 ${submitStatus === 'success' ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`}>
+              <AlertDescription className={submitStatus === 'success' ? 'text-green-800' : 'text-red-800'}>
+                {submitMessage}
+              </AlertDescription>
+            </Alert>
+          )}
 
           {/* Validation Summary (Always visible) */}
           {(errsDem.length > 0 || errsStd.length > 0 || errsAl.length > 0 || errsDr.length > 0 || errsTo.length > 0 || errsGs.length > 0 || errsGen.length > 0) && (
